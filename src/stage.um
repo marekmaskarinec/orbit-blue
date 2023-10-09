@@ -1,0 +1,67 @@
+
+import (
+	"atlas.um"
+	"canvas.um"
+	"rect.um"
+	"th.um"
+	"tilemap.um"
+	"window.um"
+
+	"coulau/logs.um"
+
+	"player.um"
+	"res.um"
+	"util.um"
+)
+
+const TAG = "stage.um"
+
+type Stage* = struct {
+	walls: tilemap.Tilemap
+	brwalls: tilemap.Tilemap
+	background: uint32
+	player: player.Player
+}
+
+fn init*() {
+	player.init()
+}
+
+fn (this: ^Stage) mk*() {
+	this.player.mk()
+	this.background = th.black
+
+	this.walls = tilemap.mk(
+		util.genRandomTilemap(80, 80),
+		80,
+		atlas.mk(res.images["Moon_Stone"], { 1, 1 })
+	)
+	this.walls.pos = { -200, -200 }
+}
+
+fn (this: ^Stage) update*() {
+	this.player.update()
+}
+
+fn (this: ^Stage) draw*() {
+	off := window.getViewportOffset()
+
+	window.setViewportOffset({ 0, 0 })
+	canvas.drawRect(this.background, rect.fromVf2({}, window.wp))
+
+	window.setViewportOffset(off.
+		add(this.player.e.t.p.
+			sub({ window.wp.x / 6, window.wp.y / 2 }).
+			add(this.player.e.r.getDims().divf(2))
+		)
+	)
+
+	this.walls.draw()
+	this.player.draw()
+
+	window.setViewportOffset(off)
+
+	res.images["Viewport"].draw({
+		s: th.vf2f(window.wp.y / res.images["Viewport"].getDims().y)
+	})
+}

@@ -1,0 +1,132 @@
+
+import (
+	"audio.um"
+	"font.um"
+	"image.um"
+	"placeholders.um"
+	"rect.um"
+	"std.um"
+	"th.um"
+	"ui.um"
+
+	"coulau/logs.um"
+
+	"glob.um"
+)
+
+const TAG = "res.um"
+
+fn readall*(path: str): str {
+	f := std.fopen(path, "r")
+
+	std.fseek(f, 0, std.seekEnd)
+	size := std.ftell(f)
+	std.fseek(f, 0, std.seekBegin)
+
+	data := make([]char, size + 1)
+	std.fread(f, &data)
+
+	return str(data)
+}
+
+var (
+	images*: map[str]image.Image
+	sounds*: map[str]audio.Sound
+	ftmono*, ftreg*: font.Font
+)
+
+fn loadImage(path: str) {
+	di := 0
+	for _:=0; di < len(path); di++ {
+		if path[di] == '.' {
+			break
+		}
+	}
+
+	si := len(path) - 1
+	for _:=0; si >= 0; si-- {
+		if si > 0 && path[si-1] == '/' {
+			break
+		}
+	}
+	
+	if si == len(path) {
+		si = 0
+	}
+
+	im := image.load(path)
+	if !im.validate() {
+		error(sprintf("Could not load image at path %s.", path))
+	}
+	images[slice(path, si, di)] = im
+
+	logs.inf(TAG, "IM: {} -> {} {}", path, slice(path, si, di), im._)
+}
+
+fn loadSound(path: str) {
+	di := 0
+	for _:=0; di < len(path); di++ {
+		if path[di] == '.' {
+			break
+		}
+	}
+
+	si := len(path) - 1
+	for _:=0; si >= 0; si-- {
+		if si > 0 && path[si-1] == '/' {
+			break
+		}
+	}
+	
+	if si == len(path) {
+		si = 0
+	}
+	
+	sn := audio.load(path)
+	if !sn.validate() {
+		error(sprintf("Could not load sound at path %s", path))
+	}
+	sounds[slice(path, si, di)] = sn
+
+	logs.inf(TAG, "SN: {} -> {} {}", path, slice(path, si, di), sn)
+}
+
+fn loadImages*() {
+	loadImage(glob.GFX_DIR + "Asteroid_COMPILE.png")
+	loadImage(glob.GFX_DIR + "Breakable_Block_COMPILE.png")
+	loadImage(glob.GFX_DIR + "Brick_Explosion_MTRX.png")
+	loadImage(glob.GFX_DIR + "Bullet.png")
+	loadImage(glob.GFX_DIR + "Bullet_Impact_MTRX.png")
+	loadImage(glob.GFX_DIR + "Gemstone_MTRX.png")
+	loadImage(glob.GFX_DIR + "Moon_Ship_Idle.png")
+	loadImage(glob.GFX_DIR + "Moon_Ship_Moving_MTRX.png")
+	loadImage(glob.GFX_DIR + "Moon_Ship_TakingDamage_MTRX.png")
+	loadImage(glob.GFX_DIR + "Moon_Stone.png")
+	loadImage(glob.GFX_DIR + "Shooting_Star_MTRX.png")
+	loadImage(glob.GFX_DIR + "Viewport.png")
+}
+
+fn loadFonts*() {
+}
+
+fn getUiStyle*(): ui.Style {
+	return {
+		ft: ftreg,
+		ftScale: 4,
+		ftColor: th.black,
+
+		posBox: {
+			img: placeholders.button,
+			outer: { 0, 0, 5, 5 },
+			inner: { 2, 2, 1, 1 },
+			scale: 0.25,
+			color: th.white },
+		negBox: {
+			img: placeholders.button,
+			outer: { 5, 0, 5, 5 },
+			inner: { 2, 2, 1, 1 },
+			scale: 0.25,
+			color: th.white },
+		containerBox: {
+			color: 0x888888ff } }
+}

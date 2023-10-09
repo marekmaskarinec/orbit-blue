@@ -1,0 +1,36 @@
+
+import (
+	"window.um"
+
+	"src/coulau/logs.um"
+
+	"src/res.um"
+	"src/stage.um"
+)
+
+const TAG = "main.um"
+
+var (
+	st: stage.Stage
+)
+
+fn init*() {
+	logs.init()
+	logs.setGlobalLogLevel(logs.LogLevelDbg)
+
+	window.setup("ORBITBLUE", 4 * 384, 4 * 216)
+	window.setViewport({384, 216})
+
+	res.loadImages()
+	res.loadFonts()
+
+	stage.init()
+
+	st.mk()
+
+	window.onFrame.register({
+		st.update()
+
+		st.draw()
+	})
+}

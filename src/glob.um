@@ -1,0 +1,14 @@
+
+const TAG = "glob.um"
+
+const (
+	DATA_PFX* = ""
+
+	GFX_DIR* = DATA_PFX + "gfx/"
+	SFX_DIR* = DATA_PFX + "sfx/"
+	DATA_DIR* = DATA_PFX + "data/"
+	FT_DIR* = DATA_PFX + "ft/"
+
+	ANIM_FPS* = 12
+)
+

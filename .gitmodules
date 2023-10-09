@@ -1,0 +1,3 @@
+[submodule "src/coulau"]
+	path = src/coulau
+	url = https://git.sr.ht/~mrms/coulau

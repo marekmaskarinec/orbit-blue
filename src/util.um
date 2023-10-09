@@ -1,0 +1,15 @@
+
+import (
+	"th.um"
+	"std.um"
+)
+
+fn genRandomTilemap*(w, h: int): []th.uu {
+	a := make([]th.uu, w * h)
+
+	for i in a {
+		a[i] = th.uu(std.frand() < 0.05)
+	}
+	
+	return a
+}
