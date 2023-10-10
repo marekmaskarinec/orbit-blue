@@ -7,8 +7,10 @@ import (
 	"rect.um"
 	"th.um"
 
+	"bullet.um"
 	"glob.um"
 	"res.um"
+	"stage.um"
 )
 
 const TAG = "player.um"
@@ -25,7 +27,8 @@ var (
 )
 
 type Player* = struct {
-	e: ent.Ent
+	e: ^ent.Ent
+	st: ^stage.Stage
 	
 	speed: real32
 }
@@ -44,10 +47,15 @@ fn init*() {
 	)
 }
 
-fn (this: ^Player) mk*() {
-	this.e = ent.mk(res.images["Moon_Ship_Idle"])
+fn (this: ^Player) mk*(st: ^stage.Stage) {
+	this.e = new(ent.Ent, ent.mk(res.images["Moon_Ship_Idle"]))
 	this.e.t.o = this.e.r.getDims().divf(2)
 	this.speed = minSpeed
+	this.st = st
+}
+
+fn (this: ^Player) getShootPos(): th.Vf2 {
+	return th.Vf2{ 32, 16 }.transformed(this.e.t)
 }
 
 fn (this: ^Player) update*() {
@@ -78,6 +86,14 @@ fn (this: ^Player) update*() {
 		this.e.i = res.images["Moon_Ship_Moving_MTRX"]
 	}
 
+	if input.isJustPressedc(' ') {
+		b := new(bullet.Bullet)
+		b.mk(this.st)
+		b.e.t.r = this.e.t.r
+		b.e.t.p = this.getShootPos().sub(b.e.r.getDims().divf(2))
+		this.st.spawn(b)
+	}
+
 	this.e.t.p = this.e.t.p.add(
 		th.Vf2{ this.speed * th.delta, 0 }.rotated({}, this.e.t.r)
 	)
@@ -86,3 +102,8 @@ fn (this: ^Player) update*() {
 fn (this: ^Player) draw*() {
 	this.e.draw()
 }
+
+fn (this: ^Player) getEnt*(): ^ent.Ent {
+	return this.e
+}
+

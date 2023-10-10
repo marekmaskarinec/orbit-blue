@@ -1,0 +1,89 @@
+
+import (
+	"anim.um"
+	"atlas.um"
+	"ent.um"
+	"th.um"
+
+	"glob.um"
+	"res.um"
+	"stage.um"
+)
+
+const (
+	speed = 0.4
+	lifetime = 4000
+)
+
+var (
+	animImpact: anim.Anim
+)
+
+type Bullet* = struct {
+	e: ^ent.Ent
+	alive: bool
+	impactAnim: anim.Anim
+	st: ^stage.Stage
+	spawn: int
+}
+
+fn init*() {
+}
+
+fn (this: ^Bullet) mk*(st: ^stage.Stage) {
+	this.e = new(ent.Ent, ent.mk(res.images["Bullet"]))
+	this.e.t.o = this.e.r.getDims().divf(2)
+	this.alive = true
+	this.st = st
+	this.impactAnim = anim.mk(
+		atlas.mk(res.images["Bullet_Impact_MTRX"], { 4, 2 }),
+		glob.ANIM_FPS,
+		0, 6
+	)
+
+	this.spawn = th.time
+}
+
+fn (this: ^Bullet) impact*() {
+	this.alive = false
+	this.impactAnim.offset = th.time
+	this.e.i = this.impactAnim.atl.i
+	this.impactAnim.animate(th.time)
+	this.e.t.o = this.impactAnim.atl.cs.mulf(0.5)
+	this.e.t.p = this.e.t.p.
+		add(this.e.r.getPos().divf(2)).
+		sub(this.impactAnim.atl.cs.divf(2))
+}
+
+fn (this: ^Bullet) update*() {
+	if this.alive {
+		this.e.t.p = this.e.t.p.add(
+			th.Vf2{ speed * th.delta, 0 }.rotated({}, this.e.t.r)
+		)
+
+		var vert: th.uu
+		var pos: th.Vf2
+		if this.st.walls.getColl(this.e^, &vert, &pos) {
+			this.impact()
+		}
+
+		if th.time - this.spawn > lifetime {
+			this.impact()
+		}
+	} else {
+		this.impactAnim.animate(th.time)
+
+		if this.impactAnim.framesPlayed(th.time) >= this.impactAnim.max - 1 {
+			this.st.deleteCurrentModel()
+		}
+	}
+}
+
+fn (this: ^Bullet) draw*() {
+	this.e.draw()
+}
+
+fn (this: ^Bullet) getEnt*(): ^ent.Ent {
+	return this.e
+}
+

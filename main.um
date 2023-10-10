@@ -5,14 +5,10 @@ import (
 	"src/coulau/logs.um"
 
 	"src/res.um"
-	"src/stage.um"
+	"src/game.um"
 )
 
 const TAG = "main.um"
-
-var (
-	st: stage.Stage
-)
 
 fn init*() {
 	logs.init()
@@ -24,13 +20,14 @@ fn init*() {
 	res.loadImages()
 	res.loadFonts()
 
-	stage.init()
+	game.init()
 
-	st.mk()
+	g := new(game.Game)
+	g.mk()
 
-	window.onFrame.register({
-		st.update()
+	window.onFrame.register(|g| {
+		g.update()
 
-		st.draw()
+		g.draw()
 	})
 }

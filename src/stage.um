@@ -2,6 +2,7 @@
 import (
 	"atlas.um"
 	"canvas.um"
+	"ent.um"
 	"rect.um"
 	"th.um"
 	"tilemap.um"
@@ -9,59 +10,77 @@ import (
 
 	"coulau/logs.um"
 
-	"player.um"
 	"res.um"
 	"util.um"
 )
 
 const TAG = "stage.um"
 
-type Stage* = struct {
-	walls: tilemap.Tilemap
-	brwalls: tilemap.Tilemap
-	background: uint32
-	player: player.Player
-}
+type (
+	Model* = interface {
+		mk(st: ^Stage)
+		update()
+		draw()
+		getEnt(): ^ent.Ent
+	}
+
+	Stage* = struct {
+		walls: tilemap.Tilemap
+		brwalls: tilemap.Tilemap
+		models: []Model
+
+		modelUpdateIdx: int
+	}
+)
 
 fn init*() {
-	player.init()
 }
 
 fn (this: ^Stage) mk*() {
-	this.player.mk()
-	this.background = th.black
-
 	this.walls = tilemap.mk(
 		util.genRandomTilemap(80, 80),
 		80,
 		atlas.mk(res.images["Moon_Stone"], { 1, 1 })
 	)
+	this.walls.collMask = { true }
 	this.walls.pos = { -200, -200 }
+	this.modelUpdateIdx = -1
+}
+
+fn (this: ^Stage) deleteCurrentModel*() {
+	if this.modelUpdateIdx < 0 {
+		error("deleteCurrentModel called out of the model update loop")
+	}
+
+	idx := this.modelUpdateIdx
+	this.modelUpdateIdx++
+
+	if len(this.models) == 1 {
+		this.models = {}
+		return
+	}
+
+	this.models[idx] = this.models[len(this.models) -1]
+	this.models = slice(this.models, 0, len(this.models) - 1)
+}
+
+fn (this: ^Stage) spawn*(m: Model) {
+	this.models = append(this.models, m)
 }
 
 fn (this: ^Stage) update*() {
-	this.player.update()
+	this.modelUpdateIdx = 0
+	for _:=0; this.modelUpdateIdx < len(this.models); this.modelUpdateIdx++ {
+		this.models[this.modelUpdateIdx].update()
+	}
+	this.modelUpdateIdx = -1
 }
 
 fn (this: ^Stage) draw*() {
-	off := window.getViewportOffset()
-
-	window.setViewportOffset({ 0, 0 })
-	canvas.drawRect(this.background, rect.fromVf2({}, window.wp))
-
-	window.setViewportOffset(off.
-		add(this.player.e.t.p.
-			sub({ window.wp.x / 6, window.wp.y / 2 }).
-			add(this.player.e.r.getDims().divf(2))
-		)
-	)
+	for i in this.models {
+		this.models[i].draw()
+	}
 
 	this.walls.draw()
-	this.player.draw()
-
-	window.setViewportOffset(off)
-
-	res.images["Viewport"].draw({
-		s: th.vf2f(window.wp.y / res.images["Viewport"].getDims().y)
-	})
 }
+

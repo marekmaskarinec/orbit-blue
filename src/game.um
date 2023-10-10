@@ -1,0 +1,57 @@
+
+import (
+	"canvas.um"
+	"rect.um"
+	"th.um"
+	"window.um"
+
+	"player.um"
+	"res.um"
+	"stage.um"
+)
+
+type Game* = struct {
+	stage: stage.Stage
+	player: player.Player
+	background: uint32
+}
+
+fn init*() {
+	stage.init()
+	player.init()
+}
+
+fn (this: ^Game) mk*() {
+	this.stage.mk()
+	this.player.mk(&this.stage)
+
+	this.background = th.black
+}
+
+fn (this: ^Game) update*() {
+	this.stage.update()
+	this.player.update()
+}
+
+fn (this: ^Game) draw*() {
+	off := window.getViewportOffset()
+
+	window.setViewportOffset({ 0, 0 })
+	canvas.drawRect(this.background, rect.fromVf2({}, window.wp))
+
+	window.setViewportOffset(off.
+		add(this.player.e.t.p.
+			sub({ window.wp.x / 6, window.wp.y / 2 }).
+			add(this.player.e.r.getDims().divf(2))
+		)
+	)
+
+	this.stage.draw()
+	this.player.draw()
+
+	window.setViewportOffset(off)
+
+	res.images["Viewport"].draw({
+		s: th.vf2f(window.wp.y / res.images["Viewport"].getDims().y)
+	})
+}
