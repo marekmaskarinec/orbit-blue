@@ -1,0 +1,49 @@
+
+import (
+	"anim.um"
+	"atlas.um"
+	"ent.um"
+	"th.um"
+
+	"glob.um"
+	"res.um"
+	"stage.um"
+)
+
+type BrokenWall* = struct {
+	pos: th.Vf2
+	anim: anim.Anim
+	st: ^stage.Stage
+}
+
+fn init*() {
+
+}
+
+fn (this: ^BrokenWall) mk*(st: ^stage.Stage) {
+	this.st = st
+	this.anim = anim.mk(
+		atlas.mk(res.images["Brick_Explosion_MTRX"], { 4, 3 }),
+		glob.ANIM_FPS,
+		0, 7
+	)
+}
+
+fn (this: ^BrokenWall) update*() {
+	this.anim.animate(th.time)
+
+	if this.anim.framesPlayed(th.time) >= this.anim.max - 1 {
+		this.st.deleteCurrentModel()
+	}
+}
+
+fn (this: ^BrokenWall) draw*() {
+	this.anim.atl.i.draw({
+		s: { 1, 1 },
+		p: this.pos
+	})
+}
+
+fn (this: ^BrokenWall) getEnt*(): ^ent.Ent {
+	return null
+}

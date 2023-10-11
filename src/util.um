@@ -4,11 +4,11 @@ import (
 	"std.um"
 )
 
-fn genRandomTilemap*(w, h: int): []th.uu {
+fn genRandomTilemap*(w, h, max: int): []th.uu {
 	a := make([]th.uu, w * h)
 
 	for i in a {
-		a[i] = th.uu(std.frand() < 0.05)
+		a[i] = th.uu(std.frand() < 0.05) * (std.rand() % max + 1)
 	}
 	
 	return a

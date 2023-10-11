@@ -5,6 +5,7 @@ import (
 	"ent.um"
 	"th.um"
 
+	"brokenwall.um"
 	"glob.um"
 	"res.um"
 	"stage.um"
@@ -65,6 +66,18 @@ fn (this: ^Bullet) update*() {
 		var pos: th.Vf2
 		if this.st.walls.getColl(this.e^, &vert, &pos) {
 			this.impact()
+		}
+
+		if this.st.brwalls.getColl(this.e^, &vert, &pos) {
+			this.impact()
+			this.st.brwalls.edit(trunc(pos.x), trunc(pos.y), 0)
+
+			bw := new(brokenwall.BrokenWall)
+			bw.pos = this.st.brwalls.pos.add(
+				pos.subf(0.5).mul(this.st.brwalls.atlas.cs)
+			)
+			bw.mk(this.st)
+			this.st.spawn(bw)
 		}
 
 		if th.time - this.spawn > lifetime {
