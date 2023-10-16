@@ -56,6 +56,14 @@ fn (this: ^Stage) mk*() {
 	this.modelUpdateIdx = -1
 }
 
+fn (this: ^Stage) getWallColl*(e: ^ent.Ent, ic, pos: ^th.Vf2): bool {
+	if this.walls.getColl(e^, ic, pos) {
+		return true
+	}
+
+	return this.brwalls.getColl(e^, ic, pos)
+}
+
 fn (this: ^Stage) deleteCurrentModel*() {
 	if this.modelUpdateIdx < 0 {
 		error("deleteCurrentModel called out of the model update loop")

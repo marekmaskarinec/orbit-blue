@@ -1,0 +1,97 @@
+
+import (
+	"atlas.um"
+	"canvas.um"
+	"ent.um"
+	"misc.um"
+	"rect.um"
+	"std.um"
+	"th.um"
+	"window.um"
+
+	"res.um"
+	"stage.um"
+)
+
+type Asteroid* = struct {
+	e: ^ent.Ent
+
+	img: th.Vf2
+
+	agl: real32
+	st: ^stage.Stage
+}
+
+const (
+	rotSpeed = 0.1
+)
+
+var (
+	texAtl: atlas.Atlas
+)
+
+fn init*() {
+	texAtl = atlas.mk(res.images["Asteroid_COMPILE"], { 3, 1 })
+}
+
+fn (this: ^Asteroid) mk*(st: ^stage.Stage) {
+	this.e = new(ent.Ent, ent.mk(res.images["Asteroid_COMPILE"]))
+	this.img = { std.rand() % 3, 0 }
+	this.agl = 240//std.rand() % 360
+	this.st = st
+	this.e.t.o = texAtl.cs.divf(2)
+	this.e.t.o = { 2, 2 }
+	this.e.r = rect.fromVf2({}, texAtl.cs)
+	this.e.c = th.blue
+}
+
+var gic: th.Vf2
+
+fn (this: ^Asteroid) changeDir*(ic, pos: th.Vf2) {
+	v := th.Vf2{ 0.03 * th.delta, 0 }.rotated({}, this.agl)
+
+	gic = ic
+
+	ic = ic.
+		sub(this.st.brwalls.pos).
+		div(this.st.brwalls.atlas.cs)
+
+	diff := ic.sub(pos.addf(0.5))
+	diff = diff.sub(diff.round()).abs()
+	horiz := diff.x > diff.y
+
+	if horiz {
+		v.x = -v.x
+	} else {
+		v.y = -v.y
+	}
+
+	this.agl = th.Vf2{}.angleTo(v)
+}
+
+fn (this: ^Asteroid) update*() {
+	//this.e.t.r += rotSpeed * th.delta
+
+	this.e.t.p = this.e.t.p.add(
+		th.Vf2{ 0, 0.03 * th.delta }.rotated({}, this.agl)
+	)
+
+	var ic, pos: th.Vf2
+	if this.st.getWallColl(this.e, &ic, &pos) {
+		this.e.c = th.red
+		this.changeDir(ic, pos)
+	} else {
+		this.e.c = th.blue
+	}
+}
+
+fn (this: ^Asteroid) draw*() {
+	texAtl.cropSource(this.img)
+	this.e.draw()
+
+	canvas.drawRect(th.yellow, { gic.x, gic.y, 2, 2 })
+}
+
+fn (this: ^Asteroid) getEnt*(): ^ent.Ent {
+	return this.e
+}

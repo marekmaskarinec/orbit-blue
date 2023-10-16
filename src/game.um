@@ -8,6 +8,8 @@ import (
 	"player.um"
 	"res.um"
 	"stage.um"
+	"asteroid.um"
+	"shootingstar.um"
 )
 
 type Game* = struct {
@@ -19,6 +21,7 @@ type Game* = struct {
 fn init*() {
 	stage.init()
 	player.init()
+	asteroid.init()
 }
 
 fn (this: ^Game) mk*() {

@@ -1,0 +1,123 @@
+
+import (
+	"anim.um"
+	"atlas.um"
+	"ent.um"
+	"std.um"
+	"th.um"
+
+	"glob.um"
+	"res.um"
+	"stage.um"
+)
+
+const (
+	MoveRandom* = 0
+	MoveLinear*
+	MoveSine*
+	MoveCircle*
+	MoveCount*
+)
+
+type ShootingStar* = struct {
+	e: ^ent.Ent
+
+	agl: real32
+	keepAgl: bool
+
+	movePattern: int
+	anim: anim.Anim
+
+	spawnPoint: th.Vf2
+	spawnPointSet: bool
+	travelled: real32
+
+	sinePeriod: real32
+	sineAmplitude: real32
+
+	circlePeriod: real32
+	circleRadius: real32
+
+	st: ^stage.Stage
+}
+
+const (
+	speed = 0.1
+)
+
+fn (this: ^ShootingStar) mk*(st: ^stage.Stage) {
+	if !this.keepAgl {
+		this.agl = std.rand() % 360
+	}
+
+	this.e = new(ent.Ent, ent.mk(res.images["Shooting_Star_MTRX"]))
+	this.e.t.o = this.e.i.getDims().divf(2)
+	this.e.t.r = this.agl
+
+	if this.movePattern == MoveRandom {
+		this.movePattern = std.rand() % (MoveCount - 1) + 1
+	}
+
+	if this.sinePeriod == 0 {
+		this.sinePeriod = 200
+	}
+
+	if this.sineAmplitude == 0 {
+		this.sineAmplitude = 8
+	}
+
+	if this.circlePeriod == 0 {
+		this.circlePeriod = 400
+	}
+
+	if this.circleRadius == 0 {
+		this.circleRadius = 15
+	}
+
+	this.anim = anim.mk(
+		atlas.mk(res.images["Shooting_Star_MTRX"], { 4, 2 }),
+		glob.ANIM_FPS,
+		0, 6
+	)
+
+	this.st = st
+}
+
+fn (this: ^ShootingStar) update*() {
+	if !this.spawnPointSet {
+		this.spawnPointSet = true
+		this.spawnPoint = this.e.t.p
+	}
+
+	this.travelled += speed * th.delta
+	this.e.t.p = th.Vf2{ this.travelled, 0 }.rotated(this.spawnPoint, this.agl)
+
+	switch this.movePattern {
+	case MoveSine:
+		this.e.t.p = this.e.t.p.add(
+			th.Vf2{ 
+				0,
+				sin(th.time / this.sinePeriod * std.pi) *
+					this.sineAmplitude
+			}.
+			rotated({}, this.agl)
+		)
+	case MoveCircle:
+		this.e.t.p = this.e.t.p.add(
+			th.Vf2{
+				this.circleRadius,
+				0
+			}.
+			rotated({}, th.time / this.circlePeriod * 360)
+		)
+	}
+}
+
+fn (this: ^ShootingStar) draw*() {
+	this.anim.animate(th.time)
+	this.e.draw()
+}
+
+fn (this: ^ShootingStar) getEnt*(): ^ent.Ent {
+	return this.e
+}

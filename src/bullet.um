@@ -4,6 +4,7 @@ import (
 	"atlas.um"
 	"ent.um"
 	"th.um"
+	"window.um"
 
 	"brokenwall.um"
 	"glob.um"
@@ -62,13 +63,12 @@ fn (this: ^Bullet) update*() {
 			th.Vf2{ speed * th.delta, 0 }.rotated({}, this.e.t.r)
 		)
 
-		var vert: th.uu
 		var pos: th.Vf2
-		if this.st.walls.getColl(this.e^, &vert, &pos) {
+		if this.st.walls.getColl(this.e^, null, &pos) {
 			this.impact()
 		}
 
-		if this.st.brwalls.getColl(this.e^, &vert, &pos) {
+		if this.st.brwalls.getColl(this.e^, null, &pos) {
 			this.impact()
 			this.st.brwalls.edit(trunc(pos.x), trunc(pos.y), 0)
 
