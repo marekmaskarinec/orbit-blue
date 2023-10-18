@@ -2,7 +2,7 @@
 import (
 	"window.um"
 
-	"src/coulau/logs.um"
+	"coulau/logs.um"
 
 	"src/res.um"
 	"src/game.um"
