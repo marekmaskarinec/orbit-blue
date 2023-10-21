@@ -1,6 +1,9 @@
 
 import (
+	"anim.um"
+	"atlas.um"
 	"audio.um"
+	"ent.um"
 	"font.um"
 	"image.um"
 	"placeholders.um"
@@ -10,103 +13,79 @@ import (
 	"ui.um"
 
 	"coulau/logs.um"
+	gfx_images = "../gfx/images.um"
 
 	"glob.um"
 )
 
 const TAG = "res.um"
 
-fn readall*(path: str): str {
-	f := std.fopen(path, "r")
-
-	std.fseek(f, 0, std.seekEnd)
-	size := std.ftell(f)
-	std.fseek(f, 0, std.seekBegin)
-
-	data := make([]char, size + 1)
-	std.fread(f, &data)
-
-	return str(data)
+type Image* = struct {
+	img: image.Image
+	scale: th.Vf2
 }
 
 var (
-	images*: map[str]image.Image
-	sounds*: map[str]audio.Sound
-	ftmono*, ftreg*: font.Font
+	images*: map[str]Image
+	atlases*: map[str]atlas.Atlas
+	animations*: map[str]anim.Anim
+
+	ftreg*, ftmono*: font.Font
 )
 
-fn loadImage(path: str) {
-	di := 0
-	for _:=0; di < len(path); di++ {
-		if path[di] == '.' {
-			break
-		}
+fn setEnt*(e: ^ent.Ent, image: str): anim.Anim {
+	if validkey(animations, image) {
+		anim := animations[image]
+		img := images[gfx_images.atlases[gfx_images.animations[image].atlas].image]
+		e.i = img.img
+		e.t.s = img.scale
+		e.r = rect.fromVf2({}, anim.atl.cs)
+
+		return anim
 	}
 
-	si := len(path) - 1
-	for _:=0; si >= 0; si-- {
-		if si > 0 && path[si-1] == '/' {
-			break
-		}
-	}
-	
-	if si == len(path) {
-		si = 0
-	}
+	e.i = images[image].img
+	e.t.s = images[image].scale
+	e.r = rect.fromVf2({}, e.i.getDims())
 
-	im := image.load(path)
-	if !im.validate() {
-		error(sprintf("Could not load image at path %s.", path))
-	}
-	images[slice(path, si, di)] = im
-
-	logs.inf(TAG, "IM: {} -> {} {}", path, slice(path, si, di), im._)
+	return {}
 }
 
-fn loadSound(path: str) {
-	di := 0
-	for _:=0; di < len(path); di++ {
-		if path[di] == '.' {
-			break
+fn init*() {
+	gfx_images.init()
+
+	for k,v in gfx_images.images {
+		printf("IMG: %s\n", k)
+
+		images[k] = {
+			image.load(v.path),
+			th.vf2f(v.scale)
 		}
 	}
 
-	si := len(path) - 1
-	for _:=0; si >= 0; si-- {
-		if si > 0 && path[si-1] == '/' {
-			break
+	for k,v in gfx_images.atlases {
+		printf("ATL: %s\n", k)
+
+		if !validkey(images, v.image) {
+			error(sprintf("Atlas %s uses invalid image %s", k, v.image))
 		}
-	}
-	
-	if si == len(path) {
-		si = 0
-	}
-	
-	sn := audio.load(path)
-	if !sn.validate() {
-		error(sprintf("Could not load sound at path %s", path))
-	}
-	sounds[slice(path, si, di)] = sn
 
-	logs.inf(TAG, "SN: {} -> {} {}", path, slice(path, si, di), sn)
-}
+		atlases[k] = atlas.mk(images[v.image].img, v.dimensions)
+	}
 
-fn loadImages*() {
-	loadImage(glob.GFX_DIR + "Asteroid_COMPILE.png")
-	loadImage(glob.GFX_DIR + "Breakable_Block_COMPILE.png")
-	loadImage(glob.GFX_DIR + "Brick_Explosion_MTRX.png")
-	loadImage(glob.GFX_DIR + "Bullet.png")
-	loadImage(glob.GFX_DIR + "Bullet_Impact_MTRX.png")
-	loadImage(glob.GFX_DIR + "Gemstone_MTRX.png")
-	loadImage(glob.GFX_DIR + "Moon_Ship_Idle.png")
-	loadImage(glob.GFX_DIR + "Moon_Ship_Moving_MTRX.png")
-	loadImage(glob.GFX_DIR + "Moon_Ship_TakingDamage_MTRX.png")
-	loadImage(glob.GFX_DIR + "Moon_Stone.png")
-	loadImage(glob.GFX_DIR + "Shooting_Star_MTRX.png")
-	loadImage(glob.GFX_DIR + "Viewport.png")
-}
+	for k,v in gfx_images.animations {
+		printf("ANM: %s\n", k)
 
-fn loadFonts*() {
+		if !validkey(atlases, v.atlas) {
+			error(sprintf("Animation %s uses invalid image %s", k, v.atlas))
+		}
+
+		animations[k] = anim.mk(
+			atlases[v.atlas],
+			v.fpsCount > 0 ? v.fpsCount : glob.ANIM_FPS,
+			0, v.frameCount
+		)
+	}
 }
 
 fn getUiStyle*(): ui.Style {

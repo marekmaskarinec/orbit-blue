@@ -17,8 +17,7 @@ fn init*() {
 	window.setup("ORBITBLUE", 4 * 384, 4 * 216)
 	window.setViewport({768, 432})
 
-	res.loadImages()
-	res.loadFonts()
+	res.init()
 
 	game.init()
 

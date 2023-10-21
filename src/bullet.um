@@ -33,21 +33,18 @@ fn init*() {
 }
 
 fn (this: ^Bullet) mk*(st: ^stage.Stage) {
-	this.e = new(ent.Ent, ent.mk(res.images["Bullet"]))
+	this.e = new(ent.Ent, ent.mk({}))
+	res.setEnt(this.e, "Bullet")
 	this.e.t.o = this.e.r.getDims().divf(2)
 	this.alive = true
 	this.st = st
-	this.impactAnim = anim.mk(
-		atlas.mk(res.images["Bullet_Impact_MTRX"], { 4, 2 }),
-		glob.ANIM_FPS,
-		0, 6
-	)
-
 	this.spawn = th.time
 }
 
 fn (this: ^Bullet) impact*() {
 	this.alive = false
+	this.impactAnim = res.setEnt(this.e, "Bullet_Impact")
+
 	this.impactAnim.offset = th.time
 	this.e.i = this.impactAnim.atl.i
 	this.impactAnim.animate(th.time)
@@ -73,10 +70,12 @@ fn (this: ^Bullet) update*() {
 			this.st.brwalls.edit(trunc(pos.x), trunc(pos.y), 0)
 
 			bw := new(brokenwall.BrokenWall)
-			bw.pos = this.st.brwalls.pos.add(
-				pos.subf(0.5).mul(this.st.brwalls.atlas.cs)
-			)
 			bw.mk(this.st)
+			bw.pos = this.st.brwalls.pos.add(
+				pos.
+					mul(this.st.brwalls.atlas.cs.mulf(this.st.brwalls.scale)).
+					sub(bw.anim.atl.cs.mul(bw.scale).divf(2))
+			)
 			this.st.spawn(bw)
 		}
 

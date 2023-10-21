@@ -22,34 +22,19 @@ const (
 	accelRate = 0.04
 )
 
-var (
-	animMoving, animTakingDamage: anim.Anim
-)
-
 type Player* = struct {
 	e: ^ent.Ent
 	st: ^stage.Stage
+
+	anim: anim.Anim
 	
 	speed: real32
 }
 
-fn init*() {
-	animMoving = anim.mk(
-		atlas.mk(res.images["Moon_Ship_Moving_MTRX"], { 4, 2 }),
-		glob.ANIM_FPS,
-		0, 5
-	)
-
-	animTakingDamage = anim.mk(
-		atlas.mk(res.images["Moon_Ship_TakingDamage_MTRX"], { 4, 1 }),
-		glob.ANIM_FPS,
-		0, 4
-	)
-}
-
 fn (this: ^Player) mk*(st: ^stage.Stage) {
-	this.e = new(ent.Ent, ent.mk(res.images["Moon_Ship_Idle"]))
-	this.e.t.o = this.e.r.getDims().divf(2)
+	this.e = new(ent.Ent, ent.mk({}))
+	res.setEnt(this.e, "Moon_Ship_Idle")
+	this.e.t.o = this.e.r.getDims().mul(this.e.t.s).divf(2)
 	this.speed = minSpeed
 	this.st = st
 }
@@ -59,9 +44,6 @@ fn (this: ^Player) getShootPos(): th.Vf2 {
 }
 
 fn (this: ^Player) update*() {
-	animMoving.animate(th.time)
-	animTakingDamage.animate(th.time)
-
 	if input.isPressed(input.key_left) {
 		this.e.t.r -= rotSpeed * th.delta
 	}
@@ -75,15 +57,19 @@ fn (this: ^Player) update*() {
 		if this.speed < minSpeed {
 			this.speed = minSpeed
 		}
-
-		this.e.i = res.images["Moon_Ship_Idle"]
 	} else {
 		this.speed += this.speed * accelRate
 		if this.speed > maxSpeed {
 			this.speed = maxSpeed
 		}
+	}
 
-		this.e.i = res.images["Moon_Ship_Moving_MTRX"]
+	if input.isJustPressed(input.key_down) {
+		this.anim = res.setEnt(this.e, "Moon_Ship_Idle")
+	}
+
+	if input.isJustReleased(input.key_down) {
+		this.anim = res.setEnt(this.e, "Moon_Ship_Moving")
 	}
 
 	if input.isJustPressedc(' ') {
@@ -100,6 +86,7 @@ fn (this: ^Player) update*() {
 }
 
 fn (this: ^Player) draw*() {
+	this.anim.animate(th.time)
 	this.e.draw()
 }
 

@@ -26,22 +26,15 @@ const (
 	rotSpeed = 0.1
 )
 
-var (
-	texAtl: atlas.Atlas
-)
-
-fn init*() {
-	texAtl = atlas.mk(res.images["Asteroid_COMPILE"], { 3, 1 })
-}
-
 fn (this: ^Asteroid) mk*(st: ^stage.Stage) {
-	this.e = new(ent.Ent, ent.mk(res.images["Asteroid_COMPILE"]))
+	this.e = new(ent.Ent, ent.mk({}))
+	res.setEnt(this.e, "Asteroid_COMPILE")
 	this.img = { std.rand() % 3, 0 }
 	this.agl = 240//std.rand() % 360
 	this.st = st
-	this.e.t.o = texAtl.cs.divf(2)
+	this.e.t.o = res.atlases["Asteroid"].cs.divf(2)
 	this.e.t.o = { 2, 2 }
-	this.e.r = rect.fromVf2({}, texAtl.cs)
+	this.e.r = rect.fromVf2({}, res.atlases["Asteroid"].cs)
 	this.e.c = th.blue
 }
 
@@ -86,7 +79,7 @@ fn (this: ^Asteroid) update*() {
 }
 
 fn (this: ^Asteroid) draw*() {
-	texAtl.cropSource(this.img)
+	res.atlases["Asteroid"].cropSource(this.img)
 	this.e.draw()
 
 	canvas.drawRect(th.yellow, { gic.x, gic.y, 2, 2 })

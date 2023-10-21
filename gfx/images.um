@@ -1,0 +1,143 @@
+
+import "th.um"
+
+type Image* = struct {
+	path: str
+	scale: real32
+}
+
+type Atlas* = struct {
+	image: str
+	dimensions: th.Vf2
+}
+
+type Animation* = struct {
+	atlas: str
+	frameCount: int
+	fpsCount: int
+}
+
+var (
+	images*: map[str]Image
+	atlases*: map[str]Atlas
+	animations*: map[str]Animation
+)
+
+fn init*() {
+	images = {
+		"Asteroid_COMPILE": {
+			path: "gfx/Asteroid_COMPILE.png",
+			scale: 1
+		},
+		"Breakable_Block_COMPILE": {
+			path: "gfx/Breakable_Block_COMPILE.png",
+			scale: 0.6
+		},
+		"Brick_Explosion_MTRX": {
+			path: "gfx/Brick_Explosion_MTRX.png",
+			scale: 1
+		},
+		"Bullet": {
+			path: "gfx/Bullet.png",
+			scale: 0.8
+		},
+		"Bullet_Impact_MTRX": {
+			path: "gfx/Bullet_Impact_MTRX.png",
+			scale: 1
+		},
+		"Gemstone_MTRX": {
+			path: "gfx/Gemstone_MTRX.png",
+			scale: 1
+		},
+		"Moon_Ship_Idle": {
+			path: "gfx/Moon_Ship_Idle.png",
+			scale: 1
+		},
+		"Moon_Ship_Moving_MTRX": {
+			path: "gfx/Moon_Ship_Moving_MTRX.png",
+			scale: 1
+		},
+		"Moon_Ship_TakingDamage_MTRX": {
+			path: "gfx/Moon_Ship_TakingDamage_MTRX.png",
+			scale: 1
+		},
+		"Moon_Stone": {
+			path: "gfx/Moon_Stone.png",
+			scale: 0.6
+		},
+		"Shooting_Star_MTRX": {
+			path: "gfx/Shooting_Star_MTRX.png",
+			scale: 1
+		},
+		"Viewport": {
+			path: "gfx/Viewport.png",
+			scale: 1
+		}
+	}
+
+	atlases = {
+		"Asteroid": {
+			image: "Asteroid_COMPILE",
+			dimensions: { 3, 1 }
+		},
+		"Breakable_Block": {
+			image: "Breakable_Block_COMPILE",
+			dimensions: { 4, 1 }
+		},
+		"Brick_Explosion": {
+			image: "Brick_Explosion_MTRX",
+			dimensions: { 4, 3 }
+		},
+		"Bullet_Impact": {
+			image: "Bullet_Impact_MTRX",
+			dimensions: { 4, 2 }
+		},
+		"Gemstone": {
+			image: "Gemstone_MTRX",
+			dimensions: { 4, 3 }
+		},
+		"Moon_Ship_Moving": {
+			image: "Moon_Ship_Moving_MTRX",
+			dimensions: { 4, 2 }
+		},
+		"Moon_Ship_TakingDamage": {
+			image: "Moon_Ship_TakingDamage_MTRX",
+			dimensions: { 4, 1 }
+		},
+		"Moon_Stone": {
+			image: "Moon_Stone",
+			dimensions: { 1, 1 }
+		},
+		"Shooting_Star": {
+			image: "Shooting_Star_MTRX",
+			dimensions: { 4, 2 }
+		}
+	}
+
+	animations = {
+		"Brick_Explosion": {
+			atlas: "Brick_Explosion",
+			frameCount: 7
+		},
+		"Bullet_Impact": {
+			atlas: "Bullet_Impact",
+			frameCount: 6
+		},
+		"Gemstone": {
+			atlas: "Gemstone",
+			frameCount: 10
+		},
+		"Moon_Ship_Moving": {
+			atlas: "Moon_Ship_Moving",
+			frameCount: 5
+		},
+		"Moon_Ship_TakingDamage": {
+			atlas: "Moon_Ship_TakingDamage",
+			frameCount: 4
+		},
+		"Shooting_Star": {
+			atlas: "Shooting_Star",
+			frameCount: 6
+		}
+	}
+}

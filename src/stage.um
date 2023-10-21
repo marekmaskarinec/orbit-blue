@@ -40,16 +40,18 @@ fn (this: ^Stage) mk*() {
 	this.walls = tilemap.mk(
 		util.genRandomTilemap(80, 80, 1),
 		80,
-		atlas.mk(res.images["Moon_Stone"], { 1, 1 })
+		res.atlases["Moon_Stone"]
 	)
+	this.walls.scale = res.images["Moon_Stone"].scale.x
 	this.walls.collMask = { true }
 	this.walls.pos = { -200, -200 }
 
 	this.brwalls = tilemap.mk(
 		util.genRandomTilemap(80, 80, 4),
 		80,
-		atlas.mk(res.images["Breakable_Block_COMPILE"], { 4, 1 })
+		res.atlases["Breakable_Block"]
 	)
+	this.brwalls.scale = res.images["Breakable_Block_COMPILE"].scale.x
 	this.brwalls.collMask = { true, true, true, true }
 	this.brwalls.pos = { -200, -200 }
 

@@ -20,8 +20,6 @@ type Game* = struct {
 
 fn init*() {
 	stage.init()
-	player.init()
-	asteroid.init()
 }
 
 fn (this: ^Game) mk*() {
@@ -54,7 +52,7 @@ fn (this: ^Game) draw*() {
 
 	window.setViewportOffset(off)
 
-	res.images["Viewport"].draw({
-		s: th.vf2f(window.wp.y / res.images["Viewport"].getDims().y)
+	res.images["Viewport"].img.draw({
+		s: th.vf2f(window.wp.y / res.images["Viewport"].img.getDims().y)
 	})
 }
